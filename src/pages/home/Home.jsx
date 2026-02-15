@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { FaLinkedinIn, FaGithub, FaDownload } from "react-icons/fa";
 import { HiArrowRight, HiAcademicCap, HiBriefcase, HiCode, HiDatabase, HiCog, HiChip } from "react-icons/hi";
@@ -52,6 +52,34 @@ const skills = {
   ]
 };
 
+// Calculate years and months from a specific start date
+const getExperience = (startDate) => {
+  const start = new Date(startDate);
+  const now = new Date();
+  
+  let years = now.getFullYear() - start.getFullYear();
+  let months = now.getMonth() - start.getMonth();
+  
+  if (months < 0) {
+    years--;
+    months += 12;
+  }
+  
+  // Adjust if the day hasn't passed yet this month
+  if (now.getDate() < start.getDate()) {
+    months--;
+    if (months < 0) {
+      years--;
+      months += 12;
+    }
+  }
+  
+  return { years, months };
+};
+
+// Set your experience start date here (YYYY-MM-DD)
+const EXPERIENCE_START_DATE = '2025-07-01';
+
 const SkillCard = ({ title, items, icon: Icon, delay }) => (
   <motion.div
     initial={{ opacity: 0, y: 40 }}
@@ -89,6 +117,12 @@ const SkillCard = ({ title, items, icon: Icon, delay }) => (
 );
 
 export default function Home() {
+  // Calculate experience dynamically - updates on every render
+  const expFormatted = useMemo(() => {
+    const { years, months } = getExperience(EXPERIENCE_START_DATE);
+    return `${years}Y ${months}M`;
+  }, []);
+
   return (
     <div className="min-h-screen bg-dark-950">
       {/* Hero Section */}
@@ -137,7 +171,7 @@ export default function Home() {
                 {/* Image container */}
                 <div className="absolute inset-4 rounded-full overflow-hidden border-4 border-dark-800 shadow-2xl shadow-accent-cyan/20">
                   <img 
-                    className='w-full h-full object-cover object-top scale-110' 
+                    className='w-full h-full object-cover object-top scale-120' 
                     src={Self.profile_pic} 
                     alt={Self.name} 
                   />
@@ -198,8 +232,7 @@ export default function Home() {
                 variants={fadeInUp}
                 className="text-gray-400 text-base sm:text-lg mb-8 leading-relaxed"
               >
-                Building scalable backend systems with NestJS, crafting efficient databases with PostgreSQL, 
-                and exploring the frontiers of AI integration.
+                Building scalable and high-performance backend systems with NestJS, designing efficient and reliable databases using PostgreSQL and exploring AI integration into systems to create smarter digital solutions.
               </motion.p>
 
               {/* CTA Buttons */}
@@ -314,7 +347,7 @@ export default function Home() {
                 <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-accent-cyan to-accent-purple opacity-20 blur-2xl" />
                 <div className="relative w-full h-full rounded-3xl overflow-hidden border border-white/10">
                   <img 
-                    className='w-full h-full object-cover' 
+                    className='w-full h-full object-cover object-top' 
                     src={Self.cover_pic} 
                     alt="About" 
                   />
@@ -329,8 +362,8 @@ export default function Home() {
                   transition={{ delay: 0.5, type: "spring" }}
                   className="absolute -bottom-6 -right-6 w-28 h-28 rounded-2xl glass flex flex-col items-center justify-center"
                 >
-                  <span className="text-3xl font-bold gradient-text">1+</span>
-                  <span className="text-xs text-gray-400">Years Exp.</span>
+                  <span className="text-3xl font-bold gradient-text">{expFormatted}</span>
+                  <span className="text-xs text-gray-400">Experience</span>
                 </motion.div>
               </div>
             </motion.div>
@@ -345,8 +378,8 @@ export default function Home() {
               {/* Info Cards */}
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-8">
                 {[
-                  { icon: HiBriefcase, label: 'Experience', value: '1+ Years', sub: 'Backend & System Design' },
-                  { icon: HiCode, label: 'Frontend', value: '1+ Years', sub: 'React & Next.js' },
+                  { icon: HiBriefcase, label: 'Experience', value: expFormatted, sub: 'Backend & System Design' },
+                  { icon: HiCode, label: 'Frontend', value: expFormatted, sub: 'React & Next.js' },
                   { icon: HiAcademicCap, label: 'Education', value: 'B.Sc CSE', sub: 'IUB, Bangladesh' },
                 ].map((item, i) => (
                   <motion.div

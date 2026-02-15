@@ -79,6 +79,6 @@ export const Self =
         FB_link: "https://www.facebook.com/rafi.sharkar.90/",
         IG_link: "https://www.instagram.com/rafi_sharkar_0777/",
         GH_link: "https://github.com/Rafi-Sharkar",
-        LI_link: "https://www.linkedin.com/in/rafi-sharkar-a8992b1a9/",
+        LI_link: "https://www.linkedin.com/in/rafi-sharkar/",
         CV_down: Self_CV,
     }

@@ -1,8 +1,9 @@
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { FaPhone, FaEnvelope, FaMapMarkerAlt, FaPaperPlane } from "react-icons/fa";
-import { HiMail, HiLocationMarker, HiPhone, HiUser, HiChat } from "react-icons/hi";
+import { HiMail, HiLocationMarker, HiPhone, HiUser, HiChat, HiDocumentText, HiCheckCircle, HiXCircle } from "react-icons/hi";
 import Footer from '../../global components/footer/Footer';
+import emailjs from '@emailjs/browser';
 
 const contactInfo = [
   {
@@ -36,17 +37,39 @@ const contactInfo = [
 ];
 
 export default function Contact({ showFooter = true }) {
-  const [formData, setFormData] = useState({ name: '', email: '', message: '' });
+  const formRef = useRef();
+  const [formData, setFormData] = useState({ name: '', email: '', subject: '', message: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState(null); // 'success' | 'error' | null
+  const [errorMessage, setErrorMessage] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    // Simulate form submission
-    setTimeout(() => {
+    setSubmitStatus(null);
+    setErrorMessage('');
+
+    try {
+      await emailjs.send(
+        'rafisharkar_portfolio',  // Service ID
+        'template_x0dfxw8',  // Template ID
+        {
+          message: `Name: ${formData.name}\nEmail: ${formData.email}\nSubject: ${formData.subject}\nMessage: ${formData.message}`,
+        },
+        '7i3uMS-5GJiWocOG9'  // Public Key
+      );
+      
+      setSubmitStatus('success');
+      setFormData({ name: '', email: '', subject: '', message: '' });
+    } catch (error) {
+      console.error('EmailJS error:', error);
+      setErrorMessage(error?.text || error?.message || 'Unknown error');
+      setSubmitStatus('error');
+    } finally {
       setIsSubmitting(false);
-      setFormData({ name: '', email: '', message: '' });
-    }, 1500);
+      // Clear status after 10 seconds
+      setTimeout(() => setSubmitStatus(null), 10000);
+    }
   };
 
   const handleChange = (e) => {
@@ -180,6 +203,20 @@ export default function Contact({ showFooter = true }) {
                       />
                     </div>
 
+                    {/* Subject Input */}
+                    <div className="relative">
+                      <HiDocumentText className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
+                      <input
+                        type="text"
+                        name="subject"
+                        value={formData.subject}
+                        onChange={handleChange}
+                        placeholder="Subject"
+                        required
+                        className="w-full pl-12 pr-4 py-3.5 bg-dark-900/50 border border-dark-600 rounded-xl text-white placeholder:text-gray-500 focus:outline-none focus:border-accent-cyan/50 focus:ring-1 focus:ring-accent-cyan/20 transition-all duration-300"
+                      />
+                    </div>
+
                     {/* Message Textarea */}
                     <div className="relative">
                       <HiChat className="absolute left-4 top-4 text-gray-500" />
@@ -214,6 +251,34 @@ export default function Contact({ showFooter = true }) {
                         </>
                       )}
                     </motion.button>
+
+                    {/* Status Messages */}
+                    {submitStatus === 'success' && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="flex items-center gap-2 p-4 bg-green-500/10 border border-green-500/30 rounded-xl text-green-400"
+                      >
+                        <HiCheckCircle className="text-xl flex-shrink-0" />
+                        <span>Message sent successfully! I'll get back to you soon.</span>
+                      </motion.div>
+                    )}
+
+                    {submitStatus === 'error' && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="flex flex-col gap-2 p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400"
+                      >
+                        <div className="flex items-center gap-2">
+                          <HiXCircle className="text-xl flex-shrink-0" />
+                          <span>Failed to send message. Please try again or email me directly.</span>
+                        </div>
+                        {errorMessage && (
+                          <p className="text-xs text-red-400/70 ml-7">Error: {errorMessage}</p>
+                        )}
+                      </motion.div>
+                    )}
                   </form>
                 </div>
               </div>

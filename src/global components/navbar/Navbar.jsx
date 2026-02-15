@@ -77,7 +77,7 @@ export default function Navbar() {
               className='relative'
             >
               <img 
-                className='w-16 md:w-20 transition-all duration-300 group-hover:brightness-110' 
+                className='w-16 md:w-20 rounded-xl transition-all duration-300 group-hover:brightness-110' 
                 src={photo_01} 
                 alt='Rafi Sharkar'
               />

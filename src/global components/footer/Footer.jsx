@@ -134,7 +134,7 @@ export default function Footer() {
               </div>
             </motion.div>
 
-            {/* Newsletter */}
+            Newsletter
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -148,24 +148,7 @@ export default function Footer() {
               <p className="text-gray-400 text-sm mb-4">
                 Get updates on my latest projects and tech insights.
               </p>
-              <form className="flex gap-2" onSubmit={(e) => e.preventDefault()}>
-                <div className="relative flex-1">
-                  <FaEnvelope className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
-                  <input
-                    type="email"
-                    placeholder="Your email"
-                    className="w-full pl-10 pr-4 py-2.5 bg-dark-800/50 border border-dark-700 rounded-xl text-sm text-white placeholder:text-gray-500 focus:outline-none focus:border-accent-cyan/50 transition-colors duration-300"
-                  />
-                </div>
-                <motion.button
-                  type="submit"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="px-4 py-2.5 bg-gradient-to-r from-accent-cyan to-accent-purple rounded-xl text-white flex items-center justify-center hover:shadow-glow transition-shadow duration-300"
-                >
-                  <FaArrowRight />
-                </motion.button>
-              </form>
+
             </motion.div>
           </div>
         </div>
