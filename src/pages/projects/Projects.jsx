@@ -2,7 +2,7 @@ import React from 'react'
 import { motion } from 'framer-motion'
 import Footer from '../../global components/footer/Footer'
 import ProjectCard from '../../global components/project_card/ProjectCard'
-import { Projects1 } from '../../assets/data/data.js'
+import { usePortfolioData } from '../../context/PortfolioDataContext'
 
 const staggerContainer = {
   hidden: { opacity: 0 },
@@ -15,6 +15,8 @@ const scaleIn = {
 };
 
 export default function Projects() {
+  const { projects } = usePortfolioData()
+
   return (
     <div className="min-h-screen bg-dark-950 pt-24">
       {/* Background effects */}
@@ -48,8 +50,8 @@ export default function Projects() {
             variants={staggerContainer}
             className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8"
           >
-            {Projects1.map((project, i) => (
-              <motion.div key={i} variants={scaleIn}>
+            {projects.map((project) => (
+              <motion.div key={project.id} variants={scaleIn}>
                 <ProjectCard 
                   img={project.img} 
                   name={project.name} 

@@ -7,6 +7,9 @@ import Gallery from './pages/gallery/Gallery'
 import Certificates from './pages/certificates/Certificates'
 import Projects from './pages/projects/Projects'
 import Contact from './pages/contact/Contact'
+import AdminLogin from './pages/admin/AdminLogin'
+import AdminDashboard from './pages/admin/AdminDashboard'
+import RequireAdmin from './pages/admin/RequireAdmin'
 
 const pageVariants = {
   initial: {
@@ -33,10 +36,11 @@ const pageVariants = {
 
 export default function Layout() {
   const location = useLocation()
+  const isAdminRoute = location.pathname.startsWith('/admin')
 
   return (
     <div className="min-h-screen bg-dark-950">
-      <Navbar />
+      {!isAdminRoute && <Navbar />}
       <AnimatePresence mode="wait">
         <Routes location={location} key={location.pathname}>
           <Route 
@@ -103,6 +107,34 @@ export default function Layout() {
                 <Contact />
               </motion.div>
             } 
+          />
+          <Route
+            path='/admin/login'
+            element={
+              <motion.div
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                variants={pageVariants}
+              >
+                <AdminLogin />
+              </motion.div>
+            }
+          />
+          <Route
+            path='/admin/dashboard'
+            element={
+              <motion.div
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                variants={pageVariants}
+              >
+                <RequireAdmin>
+                  <AdminDashboard />
+                </RequireAdmin>
+              </motion.div>
+            }
           />
         </Routes>
       </AnimatePresence>

@@ -1,42 +1,99 @@
 import React, { useState, useRef } from 'react'
 import { motion } from 'framer-motion'
-import { FaPhone, FaEnvelope, FaMapMarkerAlt, FaPaperPlane } from "react-icons/fa";
+import { FaPaperPlane } from "react-icons/fa";
 import { HiMail, HiLocationMarker, HiPhone, HiUser, HiChat, HiDocumentText, HiCheckCircle, HiXCircle } from "react-icons/hi";
 import Footer from '../../global components/footer/Footer';
 import emailjs from '@emailjs/browser';
+import { usePortfolioData } from '../../context/PortfolioDataContext';
 
-const contactInfo = [
-  {
-    icon: HiPhone,
-    label: 'Phone',
-    value: '+8801905493909',
-    href: 'tel:+8801905493909',
-    color: 'accent-cyan'
+const iconByType = {
+  phone: HiPhone,
+  email: HiMail,
+  location: HiLocationMarker,
+}
+
+const styleByColor = {
+  'accent-cyan': {
+    bgClass: 'bg-accent-cyan/10',
+    iconClass: 'text-accent-cyan',
   },
-  {
-    icon: HiMail,
-    label: 'Email',
-    value: 'rafisharkar144@gmail.com',
-    href: 'mailto:rafisharkar144@gmail.com',
-    color: 'accent-purple'
+  'accent-purple': {
+    bgClass: 'bg-accent-purple/10',
+    iconClass: 'text-accent-purple',
   },
-  {
-    icon: HiLocationMarker,
-    label: 'Location',
-    value: 'Bashundhara R/A, Dhaka',
-    href: null,
-    color: 'accent-pink'
+  'accent-pink': {
+    bgClass: 'bg-accent-pink/10',
+    iconClass: 'text-accent-pink',
   },
-  {
-    icon: HiLocationMarker,
-    label: 'Location 2',
-    value: 'Chashara, Narayanganj',
-    href: null,
-    color: 'accent-emerald'
+  'accent-emerald': {
+    bgClass: 'bg-accent-emerald/10',
+    iconClass: 'text-accent-emerald',
+  },
+}
+
+const extractEmailAddress = (item) => {
+  const source = ((item?.href || '').trim() || (item?.value || '').trim()).replace(/^mailto:/i, '')
+  const emailOnly = source.split('?')[0].trim()
+  return emailOnly.includes('@') ? emailOnly : ''
+}
+
+const looksLikeDomain = (value) => /^[a-z0-9.-]+\.[a-z]{2,}(?:\/.*)?$/i.test(value)
+
+const normalizeContactHref = (item) => {
+  const rawHref = (item?.href || '').trim()
+  const value = (item?.value || '').trim()
+  const cardType = item?.type || 'location'
+
+  if (cardType === 'email') {
+    const source = rawHref || value
+    if (!source) {
+      return ''
+    }
+
+    const sanitized = source.replace(/^mailto:/i, '').trim()
+    const emailOnly = sanitized.split('?')[0].trim()
+
+    if (!emailOnly.includes('@')) {
+      return ''
+    }
+
+    return `mailto:${emailOnly}?subject=${encodeURIComponent('Portfolio Contact')}`
   }
-];
+
+  if (cardType === 'phone') {
+    const source = rawHref || value
+    if (!source) {
+      return ''
+    }
+
+    if (/^tel:/i.test(source)) {
+      return source
+    }
+
+    const normalizedPhone = source.replace(/[^\d+]/g, '')
+    return normalizedPhone ? `tel:${normalizedPhone}` : ''
+  }
+
+  if (!rawHref) {
+    if (cardType === 'location' && value) {
+      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(value)}`
+    }
+    return ''
+  }
+
+  if (/^(https?:|mailto:|tel:)/i.test(rawHref)) {
+    return rawHref
+  }
+
+  if (cardType === 'location' && !looksLikeDomain(rawHref)) {
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(rawHref)}`
+  }
+
+  return `https://${rawHref}`
+}
 
 export default function Contact({ showFooter = true }) {
+  const { contact } = usePortfolioData()
   const formRef = useRef();
   const [formData, setFormData] = useState({ name: '', email: '', subject: '', message: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -76,6 +133,21 @@ export default function Contact({ showFooter = true }) {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const preparedCards = (contact?.cards || []).map((item) => {
+    const emailAddress = item?.type === 'email' ? extractEmailAddress(item) : ''
+    const normalizedHref = normalizeContactHref(item)
+    const resolvedHref =
+      item?.type === 'email' && emailAddress
+        ? `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(emailAddress)}`
+        : normalizedHref
+
+    return {
+      ...item,
+      resolvedHref,
+      isWebLink: /^https?:/i.test(resolvedHref),
+    }
+  })
+
   return (
     <div className={`${showFooter ? 'min-h-screen bg-dark-950 pt-24' : ''}`}>
       {/* Background effects */}
@@ -114,13 +186,13 @@ export default function Contact({ showFooter = true }) {
               className="space-y-6"
             >
               <h3 className="text-2xl font-bold text-white mb-8">
-                Let's work together
+                {contact.title}
               </h3>
               
               <div className="grid sm:grid-cols-2 gap-4">
-                {contactInfo.map((item, i) => (
+                {preparedCards.map((item, i) => (
                   <motion.div
-                    key={i}
+                    key={item.id || i}
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
@@ -128,8 +200,13 @@ export default function Contact({ showFooter = true }) {
                     whileHover={{ y: -4 }}
                     className="group"
                   >
-                    {item.href ? (
-                      <a href={item.href} className="block">
+                    {item.resolvedHref ? (
+                      <a
+                        href={item.resolvedHref}
+                        className="block"
+                        target={item.isWebLink ? '_blank' : undefined}
+                        rel={item.isWebLink ? 'noopener noreferrer' : undefined}
+                      >
                         <ContactCard item={item} />
                       </a>
                     ) : (
@@ -150,7 +227,7 @@ export default function Contact({ showFooter = true }) {
                 <div className="absolute inset-0 bg-dark-800/50 flex items-center justify-center">
                   <div className="text-center">
                     <HiLocationMarker className="text-4xl text-accent-cyan mx-auto mb-2" />
-                    <p className="text-gray-400 text-sm">Dhaka, Bangladesh</p>
+                    <p className="text-gray-400 text-sm">{contact.mapLabel}</p>
                   </div>
                 </div>
                 <div className="absolute inset-0 bg-gradient-to-br from-accent-cyan/5 to-accent-purple/5" />
@@ -294,11 +371,14 @@ export default function Contact({ showFooter = true }) {
 
 // Contact Card Component
 function ContactCard({ item }) {
+  const Icon = iconByType[item.type] || HiLocationMarker
+  const styles = styleByColor[item.color] || styleByColor['accent-cyan']
+
   return (
     <div className="p-5 bg-dark-800/50 border border-dark-700 rounded-2xl group-hover:border-accent-cyan/30 group-hover:bg-dark-800 transition-all duration-300">
       <div className="flex items-start gap-4">
-        <div className={`w-12 h-12 rounded-xl bg-${item.color}/10 flex items-center justify-center flex-shrink-0`}>
-          <item.icon className={`text-xl text-${item.color}`} />
+        <div className={`w-12 h-12 rounded-xl ${styles.bgClass} flex items-center justify-center flex-shrink-0`}>
+          <Icon className={`text-xl ${styles.iconClass}`} />
         </div>
         <div className="min-w-0">
           <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">{item.label}</p>

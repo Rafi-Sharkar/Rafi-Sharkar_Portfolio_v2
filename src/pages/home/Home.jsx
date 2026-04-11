@@ -5,8 +5,9 @@ import { HiArrowRight, HiAcademicCap, HiBriefcase, HiCode, HiDatabase, HiCog, Hi
 import ProjectCard from '../../global components/project_card/ProjectCard';
 import Contact from '../contact/Contact'
 import Footer from '../../global components/footer/Footer'
-import { Self, Projects1 } from '../../assets/data/data/'
+import { Self } from '../../assets/data/data/'
 import { Link } from 'react-router-dom';
+import { usePortfolioData } from '../../context/PortfolioDataContext';
 
 // Animation variants
 const fadeInUp = {
@@ -117,6 +118,8 @@ const SkillCard = ({ title, items, icon: Icon, delay }) => (
 );
 
 export default function Home() {
+  const { projects } = usePortfolioData()
+
   // Calculate experience dynamically - updates on every render
   const expFormatted = useMemo(() => {
     const { years, months } = getExperience(EXPERIENCE_START_DATE);
@@ -470,8 +473,8 @@ export default function Home() {
             variants={staggerContainer}
             className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8"
           >
-            {Projects1.slice(0, 3).map((project, i) => (
-              <motion.div key={i} variants={scaleIn}>
+            {projects.slice(0, 3).map((project) => (
+              <motion.div key={project.id} variants={scaleIn}>
                 <ProjectCard 
                   img={project.img} 
                   name={project.name} 

@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Footer from '../../global components/footer/Footer'
-import { Cert } from '../../assets/data/data'
 import { HiX, HiExternalLink, HiAcademicCap } from 'react-icons/hi'
+import { usePortfolioData } from '../../context/PortfolioDataContext'
 
 const staggerContainer = {
   hidden: { opacity: 0 },
@@ -15,6 +15,7 @@ const fadeInUp = {
 };
 
 export default function Certificates() {
+  const { certificates } = usePortfolioData()
   const [selectedCert, setSelectedCert] = useState(null)
 
   return (
@@ -49,9 +50,9 @@ export default function Certificates() {
             variants={staggerContainer}
             className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8"
           >
-            {Cert.map((item, i) => (
+            {certificates.map((item, i) => (
               <motion.div 
-                key={i} 
+                key={item.id} 
                 variants={fadeInUp}
                 whileHover={{ y: -8 }}
                 onClick={() => setSelectedCert(item.img)}
@@ -87,7 +88,7 @@ export default function Certificates() {
                         <HiAcademicCap className="text-xl text-accent-cyan" />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-white">Professional Certificate</h3>
+                        <h3 className="font-semibold text-white">{item.title || 'Professional Certificate'}</h3>
                         <p className="text-xs text-gray-500">Verified Achievement</p>
                       </div>
                     </div>
@@ -101,7 +102,7 @@ export default function Certificates() {
           </motion.div>
 
           {/* Empty state if no certificates */}
-          {Cert.length === 0 && (
+          {certificates.length === 0 && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}

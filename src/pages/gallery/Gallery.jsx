@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Footer from '../../global components/footer/Footer'
-import { Gallery_01 } from '../../assets/data/data'
 import { HiX, HiChevronLeft, HiChevronRight } from 'react-icons/hi'
+import { usePortfolioData } from '../../context/PortfolioDataContext'
 
 const staggerContainer = {
   hidden: { opacity: 0 },
@@ -15,6 +15,7 @@ const scaleIn = {
 };
 
 export default function Gallery() {
+  const { gallery } = usePortfolioData()
   const [selectedImage, setSelectedImage] = useState(null)
   const [selectedIndex, setSelectedIndex] = useState(0)
 
@@ -26,15 +27,15 @@ export default function Gallery() {
   const closeLightbox = () => setSelectedImage(null)
 
   const nextImage = () => {
-    const newIndex = (selectedIndex + 1) % Gallery_01.length
+    const newIndex = (selectedIndex + 1) % gallery.length
     setSelectedIndex(newIndex)
-    setSelectedImage(Gallery_01[newIndex].img)
+    setSelectedImage(gallery[newIndex].img)
   }
 
   const prevImage = () => {
-    const newIndex = selectedIndex === 0 ? Gallery_01.length - 1 : selectedIndex - 1
+    const newIndex = selectedIndex === 0 ? gallery.length - 1 : selectedIndex - 1
     setSelectedIndex(newIndex)
-    setSelectedImage(Gallery_01[newIndex].img)
+    setSelectedImage(gallery[newIndex].img)
   }
 
   return (
@@ -69,9 +70,9 @@ export default function Gallery() {
             variants={staggerContainer}
             className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-6"
           >
-            {Gallery_01.map((item, i) => (
+            {gallery.map((item, i) => (
               <motion.div 
-                key={i} 
+                key={item.id} 
                 variants={scaleIn}
                 whileHover={{ scale: 1.02 }}
                 onClick={() => openLightbox(item.img, i)}
@@ -155,7 +156,7 @@ export default function Gallery() {
 
             {/* Image counter */}
             <div className="absolute bottom-6 left-1/2 -translate-x-1/2 px-4 py-2 glass rounded-full text-white text-sm">
-              {selectedIndex + 1} / {Gallery_01.length}
+              {selectedIndex + 1} / {gallery.length}
             </div>
           </motion.div>
         )}
