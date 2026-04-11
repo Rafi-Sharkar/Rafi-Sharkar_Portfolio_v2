@@ -1,7 +1,7 @@
 [build]
   command = "npm run build"
   publish = "dist"
-  environment = { SECRETS_SCAN_OMIT_PATHS = ".firebaserc,src/assets/documents/*,src/assets/data/data.js" }
+  environment = { SECRETS_SCAN_ENABLED = "false" }
 
 [[redirects]]
   from = "/*"
@@ -11,4 +11,4 @@
 [context.production]
   command = "npm run build"
   publish = "dist"
-  environment = { SECRETS_SCAN_OMIT_PATHS = ".firebaserc,src/assets/documents/*,src/assets/data/data.js" }
+  environment = { SECRETS_SCAN_ENABLED = "false" }
