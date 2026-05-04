@@ -5,26 +5,39 @@ import { useAdminAuth } from '../../context/AdminAuthContext'
 
 export default function AdminLogin() {
   const navigate = useNavigate()
-  const { isAuthenticated, login } = useAdminAuth()
+  const { isAuthenticated, isLoading, login } = useAdminAuth()
 
-  const [form, setForm] = useState({ username: '', password: '' })
+  const [form, setForm] = useState({ email: '', password: '' })
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-dark-950 flex items-center justify-center">
+        <p className="text-gray-400">Loading...</p>
+      </div>
+    )
+  }
 
   if (isAuthenticated) {
     return <Navigate to="/admin/dashboard" replace />
   }
 
-  const onSubmit = (event) => {
+  const onSubmit = async (event) => {
     event.preventDefault()
+    setLoading(true)
+    setError('')
 
-    const result = login(form.username.trim(), form.password)
+    const result = await login(form.email.trim(), form.password)
 
     if (!result.ok) {
       setError(result.message)
+      setLoading(false)
       return
     }
 
+    setLoading(false)
     navigate('/admin/dashboard', { replace: true })
   }
 
@@ -45,13 +58,14 @@ export default function AdminLogin() {
 
         <form onSubmit={onSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm text-gray-300 mb-1">Username</label>
+            <label className="block text-sm text-gray-300 mb-1">Email</label>
             <input
-              value={form.username}
-              onChange={(event) => setForm((prev) => ({ ...prev, username: event.target.value }))}
+              type="email"
+              value={form.email}
+              onChange={(event) => setForm((prev) => ({ ...prev, email: event.target.value }))}
               className="w-full px-4 py-3 rounded-xl bg-dark-900 border border-dark-700 focus:outline-none focus:border-accent-cyan"
-              placeholder="admin"
-              autoComplete="username"
+              placeholder="admin@example.com"
+              autoComplete="email"
               required
             />
           </div>
@@ -80,13 +94,13 @@ export default function AdminLogin() {
 
           {error && <p className="text-sm text-red-400">{error}</p>}
 
-          <button type="submit" className="w-full btn-primary">
-            Login
+          <button type="submit" className="w-full btn-primary" disabled={loading}>
+            {loading ? 'Logging in...' : 'Login'}
           </button>
         </form>
 
         <div className="mt-6 text-center text-sm text-gray-400">
-          <p>Credentials are loaded from environment variables.</p>
+          <p>Use your Firebase admin email and password.</p>
           <Link to="/" className="text-accent-cyan hover:underline mt-2 inline-block">
             Return to portfolio
           </Link>
