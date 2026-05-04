@@ -151,7 +151,8 @@ export function PortfolioDataProvider({ children }) {
           projects: normalizeProjects(projects),
           contact: defaultData.contact,
         })
-      } catch {
+      } catch (error) {
+        console.error('Failed to load portfolio data:', error)
         if (active) {
           setContent(defaultData)
         }
