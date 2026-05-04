@@ -24,6 +24,6 @@ export async function handler(event) {
     return json(201, result.rows[0]);
   } catch (error) {
     console.error('addCertificate error', error);
-    return json(500, { error: 'Internal Server Error' });
+    return json(500, { error: error.message || 'Internal Server Error' });
   }
 }

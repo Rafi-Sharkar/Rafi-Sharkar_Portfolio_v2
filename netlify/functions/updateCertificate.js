@@ -29,6 +29,6 @@ export async function handler(event) {
     return result.rowCount === 0 ? json(404, { error: 'Certificate not found' }) : json(200, result.rows[0]);
   } catch (error) {
     console.error('updateCertificate error', error);
-    return json(500, { error: 'Internal Server Error' });
+    return json(500, { error: error.message || 'Internal Server Error' });
   }
 }

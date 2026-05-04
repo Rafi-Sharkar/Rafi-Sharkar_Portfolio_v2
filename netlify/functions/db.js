@@ -1,19 +1,17 @@
-// Helper to manage a single PG client across warm invocations.
+// Helper to manage a shared PostgreSQL pool across warm invocations.
 import pkg from 'pg';
 
-const { Client } = pkg;
+const { Pool } = pkg;
 
-let clientPromise;
+let pool;
 
 export async function getClient() {
-  if (!clientPromise) {
-    const client = new Client({
+  if (!pool) {
+    pool = new Pool({
       connectionString: process.env.DATABASE_URL,
       ssl: { rejectUnauthorized: false },
     });
-
-    clientPromise = client.connect().then(() => client);
   }
 
-  return clientPromise;
+  return pool;
 }

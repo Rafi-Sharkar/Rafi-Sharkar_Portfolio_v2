@@ -40,12 +40,12 @@ export async function handler(event) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(result.rows[0]),
     };
-  } catch (err) {
-    console.error('addProject error', err);
+  } catch (error) {
+    console.error('addProject error', error);
     return {
       statusCode: 500,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ error: 'Internal Server Error' }),
+      body: JSON.stringify({ error: error.message || 'Internal Server Error' }),
     };
   }
 }

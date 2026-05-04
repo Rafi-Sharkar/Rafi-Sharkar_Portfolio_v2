@@ -27,6 +27,6 @@ export async function handler(event) {
     return result.rowCount === 0 ? json(404, { error: 'Gallery item not found' }) : json(200, result.rows[0]);
   } catch (error) {
     console.error('updateGallery error', error);
-    return json(500, { error: 'Internal Server Error' });
+    return json(500, { error: error.message || 'Internal Server Error' });
   }
 }
