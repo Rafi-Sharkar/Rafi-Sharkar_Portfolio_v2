@@ -1,33 +1,47 @@
-
-import React, { createContext, useContext, useMemo, useState, useEffect } from 'react'
-import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth'
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react'
+import { onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'firebase/auth'
 import { auth, isFirebaseConfigured } from '../lib/firebase'
+
+const ADMIN_SESSION_KEY = 'admin_session_v1'
 const AdminAuthContext = createContext(null)
 
 const getStoredSession = () => {
   if (typeof window === 'undefined') {
-    return null 
+    return null
   }
 
   return window.localStorage.getItem(ADMIN_SESSION_KEY)
 }
 
+const setStoredSession = (value) => {
+  if (typeof window === 'undefined') {
+    return
+  }
+
+  if (!value) {
+    window.localStorage.removeItem(ADMIN_SESSION_KEY)
+    return
+  }
+
+  window.localStorage.setItem(ADMIN_SESSION_KEY, String(value))
+}
+
 export function AdminAuthProvider({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(Boolean(getStoredSession()))
-
   const [isLoading, setIsLoading] = useState(true)
   const [user, setUser] = useState(null)
 
-  // Monitor Firebase auth state
   useEffect(() => {
     if (!isFirebaseConfigured || !auth) {
       setIsLoading(false)
-      return
+      return undefined
     }
 
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser)
-      setIsAuthenticated(!!currentUser)
+      const authenticated = Boolean(currentUser)
+      setIsAuthenticated(authenticated)
+      setStoredSession(authenticated ? currentUser.uid : null)
       setIsLoading(false)
     })
 
@@ -41,11 +55,12 @@ export function AdminAuthProvider({ children }) {
         message: 'Firebase is not configured.',
       }
     }
-  }
+
     try {
-      const userCredential = signInWithEmailAndPassword(auth, email, password)
+      const userCredential = await signInWithEmailAndPassword(auth, email, password)
       setUser(userCredential.user)
       setIsAuthenticated(true)
+      setStoredSession(userCredential.user?.uid || 'authenticated')
       return {
         ok: true,
         message: 'Login successful.',
@@ -60,16 +75,22 @@ export function AdminAuthProvider({ children }) {
 
   const logout = async () => {
     if (!isFirebaseConfigured || !auth) {
+      setStoredSession(null)
+      setUser(null)
+      setIsAuthenticated(false)
       return
     }
 
     try {
       await signOut(auth)
+      setStoredSession(null)
       setUser(null)
       setIsAuthenticated(false)
     } catch (error) {
       console.error('Logout error:', error)
     }
+  }
+
   const value = useMemo(
     () => ({
       isAuthenticated,
