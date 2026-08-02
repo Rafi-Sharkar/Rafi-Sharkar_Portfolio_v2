@@ -1,47 +1,68 @@
-const buildUrl = (functionName, params = {}) => {
-  const url = new URL(`/.netlify/functions/${functionName}`, window.location.origin)
+// API helper for the admin dashboard. Targets Next.js API routes under /api/*.
 
+const buildUrl = (path, params = {}) => {
+  const url = new URL(path, window.location.origin);
   Object.entries(params).forEach(([key, value]) => {
     if (value !== undefined && value !== null && value !== '') {
-      url.searchParams.set(key, String(value))
+      url.searchParams.set(key, String(value));
     }
-  })
+  });
+  return url.toString();
+};
 
-  return url.toString()
-}
-
-const request = async (functionName, options = {}, params = {}) => {
-  const response = await fetch(buildUrl(functionName, params), {
+const request = async (path, options = {}, params = {}) => {
+  const response = await fetch(buildUrl(path, params), {
     headers: {
       'Content-Type': 'application/json',
       ...(options.headers || {}),
     },
     ...options,
-  })
+  });
 
-  let data = null
+  let data = null;
   try {
-    data = await response.json()
+    data = await response.json();
   } catch {
-    data = null
+    data = null;
   }
 
   if (!response.ok) {
-    throw new Error(data?.error || 'Request failed')
+    throw new Error(data?.error || 'Request failed');
   }
 
-  return data
-}
+  return data;
+};
 
-export const apiGet = (functionName) => request(functionName, { method: 'GET' })
-export const apiPost = (functionName, body) =>
-  request(functionName, {
+const detail = (resource) => (id) => `/api/${resource}/${id}`;
+
+export const apiGet = (resource) => request(`/api/${resource}`, { method: 'GET' });
+export const apiPost = (resource, body) =>
+  request(`/api/${resource}`, {
     method: 'POST',
     body: JSON.stringify(body),
-  })
-export const apiPut = (functionName, body) =>
-  request(functionName, {
+  });
+export const apiPut = (resource, id, body) =>
+  request(detail(resource)(id), {
     method: 'PUT',
     body: JSON.stringify(body),
-  })
-export const apiDelete = (functionName, id) => request(functionName, { method: 'DELETE' }, { id })
+  });
+export const apiDelete = (resource, id) =>
+  request(detail(resource)(id), { method: 'DELETE' });
+
+// Profile is a singleton — no [id] suffix.
+export const getProfile = () => request('/api/profile', { method: 'GET' });
+export const updateProfile = (body) =>
+  request('/api/profile', {
+    method: 'PUT',
+    body: JSON.stringify(body),
+  });
+
+// Auth helpers (login / logout / me).
+export const authLogin = (username, password) =>
+  request('/api/auth/login', {
+    method: 'POST',
+    body: JSON.stringify({ username, password }),
+  });
+export const authLogout = () =>
+  request('/api/auth/logout', { method: 'POST' });
+export const authMe = () => request('/api/auth/me', { method: 'GET' });

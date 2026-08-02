@@ -1,0 +1,107 @@
+// Prisma schema for the Rafi Sharkar portfolio.
+// All database access goes through Prisma. PostgreSQL provider.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// -----------------------------------------------------------------------------
+// Admin authentication
+// -----------------------------------------------------------------------------
+
+model User {
+  id           Int      @id @default(autoincrement())
+  username     String   @unique @db.VarChar(64)
+  passwordHash String   @db.VarChar(255)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+// -----------------------------------------------------------------------------
+// Portfolio content (single-row Profile + Skill list + ContactCard list)
+// -----------------------------------------------------------------------------
+
+model Profile {
+  id                  Int      @id @default(autoincrement())
+  name                String   @db.VarChar(128)
+  jobTitle            String   @db.VarChar(128)
+  bio                 String   @db.Text
+  profilePic          String   @db.VarChar(1024)
+  coverPic            String   @db.VarChar(1024)
+  cvUrl               String?  @db.VarChar(1024)
+  githubUrl           String?  @db.VarChar(512)
+  linkedinUrl         String?  @db.VarChar(512)
+  facebookUrl         String?  @db.VarChar(512)
+  instagramUrl        String?  @db.VarChar(512)
+  aboutP1             String   @db.Text
+  aboutP2             String   @db.Text
+  quote               String   @db.Text
+  heroSubtitle        String   @db.VarChar(64)
+  heroHeading         String   @db.VarChar(255)
+  heroTagline         String   @db.Text
+  contactTitle        String   @db.VarChar(255)
+  contactSubtitle     String   @db.VarChar(255)
+  mapLabel            String   @db.VarChar(255)
+  experienceStartDate DateTime @db.Date
+  updatedAt           DateTime @updatedAt
+}
+
+model Skill {
+  id       Int    @id @default(autoincrement())
+  name     String @db.VarChar(64)
+  level    String @db.VarChar(64)
+  category String @db.VarChar(32)
+  order    Int    @default(0)
+}
+
+model ContactCard {
+  id    Int     @id @default(autoincrement())
+  type  String  @db.VarChar(16)
+  label String  @db.VarChar(64)
+  value String  @db.VarChar(255)
+  href  String? @db.VarChar(512)
+  color String  @db.VarChar(32)
+  order Int     @default(0)
+}
+
+// -----------------------------------------------------------------------------
+// Existing portfolio data
+// -----------------------------------------------------------------------------
+
+model Project {
+  id          Int      @id @default(autoincrement())
+  title       String   @db.VarChar(255)
+  description String
+  github_link String?  @db.VarChar(512)
+  live_link   String?  @db.VarChar(512)
+  created_at  DateTime @default(now()) @db.Timestamptz(6)
+}
+
+model Certificate {
+  id             Int       @id @default(autoincrement())
+  title          String    @db.VarChar(255)
+  issuer         String?   @db.VarChar(255)
+  date           DateTime? @db.Date
+  credential_url String?   @db.VarChar(1024)
+}
+
+model GalleryItem {
+  id         Int      @id @default(autoincrement())
+  image_url  String   @db.VarChar(1024)
+  caption    String?
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+}
+
+model Contact {
+  id         Int      @id @default(autoincrement())
+  name       String   @db.VarChar(255)
+  email      String   @db.VarChar(320)
+  message    String
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+}
