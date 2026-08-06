@@ -18,7 +18,7 @@ export async function GET() {
 export async function POST(request) {
   try {
     const body = await request.json().catch(() => ({}));
-    const { title, issuer, date, credential_url } = body;
+    const { title, issuer, date, credential_url, image_url, description } = body;
 
     if (!title) {
       return NextResponse.json({ error: 'Missing title' }, { status: 400 });
@@ -30,6 +30,8 @@ export async function POST(request) {
         issuer: issuer ?? null,
         date: date ? new Date(date) : null,
         credential_url: credential_url ?? null,
+        image_url: image_url ?? null,
+        description: description ?? null,
       },
     });
 

@@ -15,7 +15,7 @@ export async function PUT(request, { params }) {
 
   try {
     const body = await request.json().catch(() => ({}));
-    const { title, issuer, date, credential_url } = body;
+    const { title, issuer, date, credential_url, image_url, description } = body;
 
     const existing = await prisma.certificate.findUnique({ where: { id } });
     if (!existing) {
@@ -29,6 +29,8 @@ export async function PUT(request, { params }) {
         issuer: issuer ?? existing.issuer,
         date: date ? new Date(date) : existing.date,
         credential_url: credential_url ?? existing.credential_url,
+        image_url: image_url ?? existing.image_url,
+        description: description ?? existing.description,
       },
     });
 

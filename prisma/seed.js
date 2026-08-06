@@ -7,10 +7,26 @@ const bcrypt = require('bcryptjs');
 
 const prisma = new PrismaClient();
 
+// Default admin credentials are read from environment variables so they
+// never get committed to source control. Set them in .env (already gitignored)
+// or in your deployment environment before running `npm run prisma:seed`.
+//
+//   ADMIN_USERNAME="..."
+//   ADMIN_PASSWORD="..."
+//
+// The fallback values below are intentionally weak so they are obvious to
+// spot in logs if someone forgets to set the env vars in production.
 const DEFAULT_ADMIN = {
-  username: 'rafi_sharkar',
-  password: 'Rafi#144',
+  username: process.env.ADMIN_USERNAME || 'admin',
+  password: process.env.ADMIN_PASSWORD || 'change-me-set-ADMIN_PASSWORD',
 };
+
+if (DEFAULT_ADMIN.password === 'change-me-set-ADMIN_PASSWORD') {
+  console.warn(
+    '[seed] WARNING: ADMIN_PASSWORD is not set in the environment. ' +
+      'Using an insecure default. Set ADMIN_USERNAME and ADMIN_PASSWORD in .env before seeding.'
+  );
+}
 
 const DEFAULT_PROFILE = {
   name: 'Mustakim Billah Rafi',
@@ -85,15 +101,23 @@ const DEFAULT_CONTACT_CARDS = [
 async function main() {
   // 1. Default admin user
   const passwordHash = await bcrypt.hash(DEFAULT_ADMIN.password, 10);
+  // If ADMIN_PASSWORD was explicitly set, sync it to the row on every seed so
+  // rotating the env var actually takes effect. Otherwise, leave existing
+  // passwords alone so admins who changed theirs in the dashboard aren't
+  // silently reverted.
+  const passwordExplicitlySet = !!process.env.ADMIN_PASSWORD;
   await prisma.user.upsert({
     where: { username: DEFAULT_ADMIN.username },
-    update: {}, // never overwrite an existing password — admin can change it in the dashboard later
+    update: passwordExplicitlySet ? { passwordHash } : {},
     create: {
       username: DEFAULT_ADMIN.username,
       passwordHash,
     },
   });
-  console.log(`[seed] ensured admin user: ${DEFAULT_ADMIN.username}`);
+  console.log(
+    `[seed] ensured admin user: ${DEFAULT_ADMIN.username}` +
+      (passwordExplicitlySet ? ' (password synced from env)' : ' (existing password preserved)')
+  );
 
   // 2. Default Profile (single row)
   const profileCount = await prisma.profile.count();

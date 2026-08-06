@@ -145,7 +145,9 @@ const normalizeProjects = (rows) => {
       id: String(row.id),
       createdAt: row.created_at ? new Date(row.created_at).getTime() : Date.now() - index * 1000,
       name: row.title || 'Untitled Project',
-      img: projectImages[index % projectImages.length] || projectImages[0] || '',
+      // Prefer the row's own uploaded image; fall back to the static
+      // placeholder so the public grid never shows a broken thumbnail.
+      img: row.image_url || projectImages[index % projectImages.length] || projectImages[0] || '',
       scode: row.github_link || '',
       link: row.live_link || '',
       description: row.description || '',
@@ -162,6 +164,8 @@ const normalizeGallery = (rows) => {
       createdAt: row.created_at ? new Date(row.created_at).getTime() : Date.now() - index * 1000,
       img: row.image_url || '',
       caption: row.caption || '',
+      title: row.title || '',
+      story: row.story || '',
     })),
     'gallery'
   );
@@ -172,12 +176,14 @@ const normalizeCertificates = (rows) => {
   return withIds(
     rows.map((row, index) => ({
       id: String(row.id),
-      createdAt: row.created_at ? new Date(row.created_at).getTime() : Date.now() - index * 1000,
-      img: certificateImage,
+      createdAt: row.date ? new Date(row.date).getTime() : Date.now() - index * 1000,
+      // Prefer the row's uploaded image; fall back to the static placeholder.
+      img: row.image_url || certificateImage,
       title: row.title || 'Professional Certificate',
       issuer: row.issuer || '',
       date: row.date || '',
       credential_url: row.credential_url || '',
+      description: row.description || '',
     })),
     'certificate'
   );
