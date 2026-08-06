@@ -18,7 +18,7 @@ export async function GET() {
 export async function POST(request) {
   try {
     const body = await request.json().catch(() => ({}));
-    const { image_url, caption } = body;
+    const { image_url, caption, title, story } = body;
 
     if (!image_url) {
       return NextResponse.json({ error: 'Missing image_url' }, { status: 400 });
@@ -27,7 +27,9 @@ export async function POST(request) {
     const item = await prisma.galleryItem.create({
       data: {
         image_url,
+        title: title ?? null,
         caption: caption ?? null,
+        story: story ?? null,
       },
     });
 

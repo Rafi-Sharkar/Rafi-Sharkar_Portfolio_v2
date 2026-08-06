@@ -74,21 +74,35 @@ export default function GalleryPage() {
                 key={item.id}
                 variants={scaleIn}
                 whileHover={{ scale: 1.02 }}
+                className="group cursor-pointer"
                 onClick={() => openLightbox(item.img, i)}
-                className="relative aspect-[4/3] rounded-2xl overflow-hidden cursor-pointer group"
               >
-                <img
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                  src={item.img}
-                  alt={`Gallery image ${i + 1}`}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-dark-900/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <div className="w-12 h-12 rounded-full glass flex items-center justify-center">
-                    <span className="text-white text-2xl">+</span>
+                <div className="relative aspect-[4/3] rounded-2xl overflow-hidden">
+                  <img
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    src={item.img}
+                    alt={item.title || `Gallery image ${i + 1}`}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-dark-900/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <div className="w-12 h-12 rounded-full glass flex items-center justify-center">
+                      <span className="text-white text-2xl">+</span>
+                    </div>
                   </div>
+                  <div className="absolute inset-0 border-2 border-transparent group-hover:border-accent-cyan/30 rounded-2xl transition-colors duration-300" />
                 </div>
-                <div className="absolute inset-0 border-2 border-transparent group-hover:border-accent-cyan/30 rounded-2xl transition-colors duration-300" />
+                {(item.title || item.story || item.caption) && (
+                  <div className="mt-3 px-1">
+                    {item.title && (
+                      <h3 className="text-sm font-semibold text-white truncate">{item.title}</h3>
+                    )}
+                    {(item.story || item.caption) && (
+                      <p className="text-xs text-gray-400 line-clamp-2 mt-0.5">
+                        {item.story || item.caption}
+                      </p>
+                    )}
+                  </div>
+                )}
               </motion.div>
             ))}
           </motion.div>

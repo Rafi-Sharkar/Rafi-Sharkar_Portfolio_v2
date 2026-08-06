@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { FaGithub, FaExternalLinkAlt } from 'react-icons/fa';
 import { HiArrowRight } from 'react-icons/hi';
 
-export default function ProjectCard({ img, name, scode, lnk }) {
+export default function ProjectCard({ img, name, scode, lnk, desc }) {
   const [isHovered, setIsHovered] = useState(false);
 
   return (
@@ -18,7 +18,7 @@ export default function ProjectCard({ img, name, scode, lnk }) {
     >
       <div className="absolute -inset-0.5 bg-gradient-to-r from-accent-cyan to-accent-purple rounded-2xl opacity-0 group-hover:opacity-50 blur-xl transition-all duration-500" />
 
-      <div className="relative h-full bg-dark-800/80 backdrop-blur-sm border border-dark-700 rounded-2xl overflow-hidden group-hover:border-accent-cyan/30 transition-all duration-500">
+      <div className="relative h-full bg-dark-800/80 backdrop-blur-sm border border-dark-700 rounded-2xl overflow-hidden group-hover:border-accent-cyan/30 transition-all duration-500 flex flex-col">
         <div className="relative h-48 sm:h-56 overflow-hidden">
           <motion.img
             src={img}
@@ -67,12 +67,16 @@ export default function ProjectCard({ img, name, scode, lnk }) {
           </div>
         </div>
 
-        <div className="p-5 sm:p-6">
-          <h3 className="text-lg sm:text-xl font-bold text-white mb-3 line-clamp-1 group-hover:text-accent-cyan transition-colors duration-300">
+        <div className="p-5 sm:p-6 flex-1 flex flex-col">
+          <h3 className="text-lg sm:text-xl font-bold text-white mb-2 line-clamp-1 group-hover:text-accent-cyan transition-colors duration-300">
             {name}
           </h3>
 
-          <div className="flex gap-3">
+          {desc && (
+            <p className="text-sm text-gray-400 mb-4 line-clamp-3 flex-1">{desc}</p>
+          )}
+
+          <div className="flex gap-3 mt-auto">
             <a
               href={scode}
               target="_blank"

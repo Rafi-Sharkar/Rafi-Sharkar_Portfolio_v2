@@ -66,3 +66,33 @@ export const authLogin = (username, password) =>
 export const authLogout = () =>
   request('/api/auth/logout', { method: 'POST' });
 export const authMe = () => request('/api/auth/me', { method: 'GET' });
+
+// Media upload — sends a file to /api/upload as multipart/form-data.
+// Returns { url, key, contentType, size, originalName } on success.
+export async function uploadMedia(file, folder) {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('folder', folder);
+
+  const response = await fetch('/api/upload', {
+    method: 'POST',
+    body: formData,
+    // Note: NO Content-Type header — the browser sets it with the boundary
+    // for multipart/form-data when we use FormData. Setting it manually
+    // would break the boundary and cause a 400.
+    credentials: 'include',
+  });
+
+  let data = null;
+  try {
+    data = await response.json();
+  } catch {
+    data = null;
+  }
+
+  if (!response.ok) {
+    throw new Error(data?.error || `Upload failed (${response.status})`);
+  }
+
+  return data;
+}

@@ -15,7 +15,7 @@ export async function PUT(request, { params }) {
 
   try {
     const body = await request.json().catch(() => ({}));
-    const { image_url, caption } = body;
+    const { image_url, caption, title, story } = body;
 
     const existing = await prisma.galleryItem.findUnique({ where: { id } });
     if (!existing) {
@@ -26,7 +26,9 @@ export async function PUT(request, { params }) {
       where: { id },
       data: {
         image_url: image_url ?? existing.image_url,
+        title: title ?? existing.title,
         caption: caption ?? existing.caption,
+        story: story ?? existing.story,
       },
     });
 

@@ -21,7 +21,7 @@ export async function GET() {
 export async function POST(request) {
   try {
     const body = await request.json().catch(() => ({}));
-    const { title, description, github_link, live_link } = body;
+    const { title, description, github_link, live_link, image_url } = body;
 
     if (!title || !description) {
       return NextResponse.json(
@@ -36,6 +36,7 @@ export async function POST(request) {
         description,
         github_link: github_link ?? null,
         live_link: live_link ?? null,
+        image_url: image_url ?? null,
       },
     });
 

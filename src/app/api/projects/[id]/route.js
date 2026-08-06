@@ -15,7 +15,7 @@ export async function PUT(request, { params }) {
 
   try {
     const body = await request.json().catch(() => ({}));
-    const { title, description, github_link, live_link } = body;
+    const { title, description, github_link, live_link, image_url } = body;
 
     const existing = await prisma.project.findUnique({ where: { id } });
     if (!existing) {
@@ -29,6 +29,7 @@ export async function PUT(request, { params }) {
         description: description ?? existing.description,
         github_link: github_link ?? existing.github_link,
         live_link: live_link ?? existing.live_link,
+        image_url: image_url ?? existing.image_url,
       },
     });
 

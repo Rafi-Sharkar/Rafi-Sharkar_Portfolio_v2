@@ -49,7 +49,13 @@ export default function ProjectsPage() {
           >
             {projects.map((project) => (
               <motion.div key={project.id} variants={scaleIn}>
-                <ProjectCard img={project.img} name={project.name} scode={project.scode} lnk={project.link} />
+                <ProjectCard
+                  img={project.img}
+                  name={project.name}
+                  scode={project.scode}
+                  lnk={project.link}
+                  desc={project.description}
+                />
               </motion.div>
             ))}
           </motion.div>

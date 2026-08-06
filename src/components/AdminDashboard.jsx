@@ -14,7 +14,14 @@ import {
   HiMail,
   HiLightningBolt,
   HiLocationMarker,
+  HiEye,
+  HiRefresh,
+  HiExternalLink,
+  HiX,
+  HiUpload,
+  HiVideoCamera,
 } from 'react-icons/hi';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useAdminAuth } from '@/context/AdminAuthProvider';
 import {
   apiDelete,
@@ -23,6 +30,7 @@ import {
   apiPut,
   getProfile,
   updateProfile,
+  uploadMedia,
 } from '@/lib/adminApi';
 
 const sectionTabs = [
@@ -35,9 +43,22 @@ const sectionTabs = [
   { key: 'contacts', label: 'Messages', icon: HiPhone },
 ];
 
-const emptyProject = { title: '', description: '', github_link: '', live_link: '' };
-const emptyGallery = { image_url: '', caption: '' };
-const emptyCertificate = { title: '', issuer: '', date: '', credential_url: '' };
+// Which public page best previews the data being edited in each tab.
+// Public pages render their own copy of the data via usePortfolioData(),
+// so the iframe will pick up any DB changes after a manual refresh.
+const TAB_PREVIEW_URL = {
+  profile: '/',
+  'contact-info': '/contact',
+  skills: '/',
+  projects: '/projects',
+  gallery: '/gallery',
+  certificates: '/certificates',
+  contacts: '/contact',
+};
+
+const emptyProject = { title: '', description: '', github_link: '', live_link: '', image_url: '' };
+const emptyGallery = { image_url: '', caption: '', title: '', story: '' };
+const emptyCertificate = { title: '', issuer: '', date: '', credential_url: '', image_url: '', description: '' };
 const emptySkill = { name: '', level: 'Intermediate', category: 'languages', order: 0 };
 const emptyContactCard = {
   type: 'email',
@@ -118,6 +139,11 @@ export default function AdminDashboard() {
   });
   const [loading, setLoading] = useState(true);
   const [confirmation, setConfirmation] = useState({ message: '', type: 'success' });
+
+  // Live preview modal — iframe showing the relevant public page.
+  // `previewKey` is bumped to force a remount (and thus a re-fetch) on Refresh.
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewKey, setPreviewKey] = useState(0);
 
   const showConfirmation = (message, type = 'success') => {
     setConfirmation({ message, type });
@@ -202,6 +228,7 @@ export default function AdminDashboard() {
           description: item.description || '',
           github_link: item.github_link || '',
           live_link: item.live_link || '',
+          image_url: item.image_url || '',
         },
       }));
     } else if (tab === 'gallery') {
@@ -210,6 +237,8 @@ export default function AdminDashboard() {
         gallery: {
           image_url: item.image_url || '',
           caption: item.caption || '',
+          title: item.title || '',
+          story: item.story || '',
         },
       }));
     } else if (tab === 'certificates') {
@@ -220,6 +249,8 @@ export default function AdminDashboard() {
           issuer: item.issuer || '',
           date: item.date ? String(item.date).slice(0, 10) : '',
           credential_url: item.credential_url || '',
+          image_url: item.image_url || '',
+          description: item.description || '',
         },
       }));
     } else if (tab === 'skills') {
@@ -258,6 +289,7 @@ export default function AdminDashboard() {
       description: forms.projects.description.trim(),
       github_link: forms.projects.github_link.trim(),
       live_link: forms.projects.live_link.trim(),
+      image_url: forms.projects.image_url.trim() || null,
     };
     if (!payload.title || !payload.description) {
       throw new Error('Project title and description are required.');
@@ -274,9 +306,11 @@ export default function AdminDashboard() {
   const saveGallery = async () => {
     const payload = {
       image_url: forms.gallery.image_url.trim(),
-      caption: forms.gallery.caption.trim(),
+      caption: forms.gallery.caption.trim() || null,
+      title: forms.gallery.title.trim() || null,
+      story: forms.gallery.story.trim() || null,
     };
-    if (!payload.image_url) throw new Error('Gallery image URL is required.');
+    if (!payload.image_url) throw new Error('Gallery image is required.');
     if (editId) {
       await apiPut('gallery', editId, payload);
       showConfirmation('Gallery item updated.');
@@ -289,9 +323,11 @@ export default function AdminDashboard() {
   const saveCertificate = async () => {
     const payload = {
       title: forms.certificates.title.trim(),
-      issuer: forms.certificates.issuer.trim(),
+      issuer: forms.certificates.issuer.trim() || null,
       date: forms.certificates.date || null,
-      credential_url: forms.certificates.credential_url.trim(),
+      credential_url: forms.certificates.credential_url.trim() || null,
+      image_url: forms.certificates.image_url.trim() || null,
+      description: forms.certificates.description.trim() || null,
     };
     if (!payload.title) throw new Error('Certificate title is required.');
     if (editId) {
@@ -414,6 +450,14 @@ export default function AdminDashboard() {
               )}
             </div>
             <div className="flex items-center gap-2">
+              <button
+                onClick={() => setPreviewOpen(true)}
+                className="btn-secondary px-4 py-2 text-sm inline-flex items-center gap-2"
+                title="Preview the public site for this section"
+              >
+                <HiEye />
+                Preview
+              </button>
               <Link href="/" className="btn-secondary px-4 py-2 text-sm">
                 View Portfolio
               </Link>
@@ -505,6 +549,18 @@ export default function AdminDashboard() {
                   <Field label="Cover picture URL">
                     <input value={forms.profile.coverPic} onChange={(e) => setField('profile', 'coverPic', e.target.value)} className={inputCls} placeholder="/photos/cover.jpg" />
                   </Field>
+                  <MediaUploadField
+                    label="Profile picture (upload)"
+                    folder="profile"
+                    value={forms.profile.profilePic}
+                    onChange={(url) => setField('profile', 'profilePic', url)}
+                  />
+                  <MediaUploadField
+                    label="Cover picture (upload)"
+                    folder="profile"
+                    value={forms.profile.coverPic}
+                    onChange={(url) => setField('profile', 'coverPic', url)}
+                  />
                   <Field label="CV URL">
                     <input value={forms.profile.cvUrl} onChange={(e) => setField('profile', 'cvUrl', e.target.value)} className={inputCls} placeholder="/documents/MUSTAKIM_BILLAH_RAFI.pdf" />
                   </Field>
@@ -607,77 +663,133 @@ export default function AdminDashboard() {
 
               {activeTab === 'projects' && (
                 <div className="space-y-4">
-                  <input
-                    value={forms.projects.title}
-                    onChange={(e) => setField('projects', 'title', e.target.value)}
-                    placeholder="Project title"
-                    className={inputCls}
+                  <MediaUploadField
+                    label="Project thumbnail"
+                    folder="projects"
+                    value={forms.projects.image_url}
+                    onChange={(url) => setField('projects', 'image_url', url)}
                   />
-                  <textarea
-                    value={forms.projects.description}
-                    onChange={(e) => setField('projects', 'description', e.target.value)}
-                    placeholder="Project description"
-                    rows={4}
-                    className={inputCls}
-                  />
-                  <input
-                    value={forms.projects.github_link}
-                    onChange={(e) => setField('projects', 'github_link', e.target.value)}
-                    placeholder="GitHub link"
-                    className={inputCls}
-                  />
-                  <input
-                    value={forms.projects.live_link}
-                    onChange={(e) => setField('projects', 'live_link', e.target.value)}
-                    placeholder="Live link (optional)"
-                    className={inputCls}
-                  />
+                  <Field label="Title">
+                    <input
+                      value={forms.projects.title}
+                      onChange={(e) => setField('projects', 'title', e.target.value)}
+                      placeholder="Project title"
+                      className={inputCls}
+                    />
+                  </Field>
+                  <Field label="Description">
+                    <textarea
+                      value={forms.projects.description}
+                      onChange={(e) => setField('projects', 'description', e.target.value)}
+                      placeholder="Project description"
+                      rows={4}
+                      className={inputCls}
+                    />
+                  </Field>
+                  <Field label="GitHub link">
+                    <input
+                      value={forms.projects.github_link}
+                      onChange={(e) => setField('projects', 'github_link', e.target.value)}
+                      placeholder="https://github.com/..."
+                      className={inputCls}
+                    />
+                  </Field>
+                  <Field label="Live link (optional)">
+                    <input
+                      value={forms.projects.live_link}
+                      onChange={(e) => setField('projects', 'live_link', e.target.value)}
+                      placeholder="https://..."
+                      className={inputCls}
+                    />
+                  </Field>
                 </div>
               )}
 
               {activeTab === 'gallery' && (
                 <div className="space-y-4">
-                  <input
+                  <MediaUploadField
+                    label="Photo"
+                    folder="gallery"
                     value={forms.gallery.image_url}
-                    onChange={(e) => setField('gallery', 'image_url', e.target.value)}
-                    placeholder="Image URL"
-                    className={inputCls}
+                    onChange={(url) => setField('gallery', 'image_url', url)}
                   />
-                  <input
-                    value={forms.gallery.caption}
-                    onChange={(e) => setField('gallery', 'caption', e.target.value)}
-                    placeholder="Caption (optional)"
-                    className={inputCls}
-                  />
+                  <Field label="Title">
+                    <input
+                      value={forms.gallery.title}
+                      onChange={(e) => setField('gallery', 'title', e.target.value)}
+                      placeholder="Photo title (optional)"
+                      className={inputCls}
+                    />
+                  </Field>
+                  <Field label="Story / Description">
+                    <textarea
+                      value={forms.gallery.story}
+                      onChange={(e) => setField('gallery', 'story', e.target.value)}
+                      placeholder="Tell the story behind this photo (optional)"
+                      rows={4}
+                      className={inputCls}
+                    />
+                  </Field>
+                  <Field label="Caption (legacy)">
+                    <input
+                      value={forms.gallery.caption}
+                      onChange={(e) => setField('gallery', 'caption', e.target.value)}
+                      placeholder="Short caption (optional, legacy field)"
+                      className={inputCls}
+                    />
+                  </Field>
                 </div>
               )}
 
               {activeTab === 'certificates' && (
                 <div className="space-y-4">
-                  <input
-                    value={forms.certificates.title}
-                    onChange={(e) => setField('certificates', 'title', e.target.value)}
-                    placeholder="Certificate title"
-                    className={inputCls}
+                  <MediaUploadField
+                    label="Certificate photo"
+                    folder="certificates"
+                    value={forms.certificates.image_url}
+                    onChange={(url) => setField('certificates', 'image_url', url)}
                   />
-                  <input
-                    value={forms.certificates.issuer}
-                    onChange={(e) => setField('certificates', 'issuer', e.target.value)}
-                    placeholder="Issuer"
-                    className={inputCls}
-                  />
-                  <input
-                    type="date"
-                    value={forms.certificates.date}
-                    onChange={(e) => setField('certificates', 'date', e.target.value)}
-                    className={inputCls}
-                  />
-                  <input
-                    value={forms.certificates.credential_url}
-                    onChange={(e) => setField('certificates', 'credential_url', e.target.value)}
-                    placeholder="Credential URL"
-                    className={inputCls}
-                  />
+                  <Field label="Title">
+                    <input
+                      value={forms.certificates.title}
+                      onChange={(e) => setField('certificates', 'title', e.target.value)}
+                      placeholder="Certificate title"
+                      className={inputCls}
+                    />
+                  </Field>
+                  <Field label="Issuer">
+                    <input
+                      value={forms.certificates.issuer}
+                      onChange={(e) => setField('certificates', 'issuer', e.target.value)}
+                      placeholder="Issuer (e.g. Coursera, AWS)"
+                      className={inputCls}
+                    />
+                  </Field>
+                  <Field label="Date earned">
+                    <input
+                      type="date"
+                      value={forms.certificates.date}
+                      onChange={(e) => setField('certificates', 'date', e.target.value)}
+                      className={inputCls}
+                    />
+                  </Field>
+                  <Field label="Description">
+                    <textarea
+                      value={forms.certificates.description}
+                      onChange={(e) => setField('certificates', 'description', e.target.value)}
+                      placeholder="What was this certificate for? (optional)"
+                      rows={3}
+                      className={inputCls}
+                    />
+                  </Field>
+                  <Field label="Credential URL (optional)">
+                    <input
+                      value={forms.certificates.credential_url}
+                      onChange={(e) => setField('certificates', 'credential_url', e.target.value)}
+                      placeholder="https://credential.url/..."
+                      className={inputCls}
+                    />
+                  </Field>
                 </div>
               )}
 
@@ -800,18 +912,45 @@ export default function AdminDashboard() {
                       currentItems.map((item) => (
                         <div key={item.id} className="p-3 rounded-xl bg-dark-900 border border-dark-700 flex items-center justify-between gap-3">
                           <div className="flex items-center gap-3 min-w-0">
-                            <div className="w-12 h-12 rounded-lg overflow-hidden bg-dark-800 border border-dark-700 flex-shrink-0">
-                              {activeTab === 'gallery' ? (
-                                <img src={item.image_url} alt={item.caption || 'Gallery item'} className="w-full h-full object-cover" />
+                            <div className="w-14 h-14 rounded-lg overflow-hidden bg-dark-800 border border-dark-700 flex-shrink-0">
+                              {item.image_url ? (
+                                <img src={item.image_url} alt="" className="w-full h-full object-cover" />
                               ) : (
-                                <div className="w-full h-full flex items-center justify-center text-xs text-gray-500">DB</div>
+                                <div className="w-full h-full flex items-center justify-center text-xs text-gray-500">—</div>
                               )}
                             </div>
-                            <div className="min-w-0">
-                              {activeTab === 'projects' && <p className="font-medium truncate">{item.title}</p>}
-                              {activeTab === 'gallery' && <p className="font-medium truncate">{item.caption || 'Gallery image'}</p>}
-                              {activeTab === 'certificates' && <p className="font-medium truncate">{item.title || 'Certificate'}</p>}
-                              <p className="text-xs text-gray-500 truncate">{item.id}</p>
+                            <div className="min-w-0 flex-1">
+                              {activeTab === 'projects' && (
+                                <>
+                                  <p className="font-medium truncate">{item.title}</p>
+                                  <p className="text-xs text-gray-500 truncate">
+                                    {item.description || 'No description'}
+                                  </p>
+                                  {item.github_link && (
+                                    <p className="text-xs text-accent-cyan truncate">GH: {item.github_link}</p>
+                                  )}
+                                </>
+                              )}
+                              {activeTab === 'gallery' && (
+                                <>
+                                  <p className="font-medium truncate">{item.title || item.caption || 'Gallery image'}</p>
+                                  {item.story && (
+                                    <p className="text-xs text-gray-500 line-clamp-2">{item.story}</p>
+                                  )}
+                                </>
+                              )}
+                              {activeTab === 'certificates' && (
+                                <>
+                                  <p className="font-medium truncate">{item.title || 'Certificate'}</p>
+                                  <p className="text-xs text-gray-500 truncate">
+                                    {item.issuer ? `${item.issuer}` : 'No issuer'}
+                                    {item.date ? ` • ${String(item.date).slice(0, 10)}` : ''}
+                                  </p>
+                                  {item.description && (
+                                    <p className="text-xs text-gray-500 line-clamp-2">{item.description}</p>
+                                  )}
+                                </>
+                              )}
                             </div>
                           </div>
                           <div className="flex items-center gap-2">
@@ -839,6 +978,18 @@ export default function AdminDashboard() {
           </section>
         </div>
       </div>
+
+      <AnimatePresence>
+        {previewOpen && (
+          <PreviewModal
+            key="preview-modal"
+            url={TAB_PREVIEW_URL[activeTab] || '/'}
+            previewKey={previewKey}
+            onRefresh={() => setPreviewKey((k) => k + 1)}
+            onClose={() => setPreviewOpen(false)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -851,5 +1002,240 @@ function Field({ label, full = false, children }) {
       <label className="block text-xs text-gray-400 mb-1">{label}</label>
       {children}
     </div>
+  );
+}
+
+// Reusable media upload input. Wraps a file picker + preview + Upload button.
+// On success, the parent form's value is updated via `onChange(url)`. The
+// `value` prop holds the current URL (from the DB) so editing an existing
+// row shows the previously-uploaded preview without needing to re-upload.
+//
+// Props:
+//   label      — field label
+//   folder     — S3 folder: 'profile' | 'gallery' | 'certificates' | 'projects'
+//   value      — current URL (may be empty)
+//   onChange   — (newUrl) => void
+//   accept     — optional accept attr (defaults to images only)
+function MediaUploadField({ label, folder, value, onChange, accept = 'image/*' }) {
+  const [file, setFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState('');
+  const [status, setStatus] = useState('idle'); // idle | uploading | done | error
+  const [error, setError] = useState('');
+
+  // Revoke the object URL on unmount or when a new file is chosen to avoid
+  // memory leaks. Browsers don't garbage-collect these aggressively.
+  useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    };
+  }, [previewUrl]);
+
+  const onPick = (e) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    setFile(f);
+    setError('');
+    setStatus('idle');
+    const url = URL.createObjectURL(f);
+    setPreviewUrl(url);
+  };
+
+  const onUpload = async () => {
+    if (!file) {
+      setError('Choose a file first.');
+      return;
+    }
+    setStatus('uploading');
+    setError('');
+    try {
+      const result = await uploadMedia(file, folder);
+      onChange(result.url);
+      setStatus('done');
+      // Clear the chosen file so the form shows the saved URL, not the
+      // local blob preview anymore.
+      setFile(null);
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+        setPreviewUrl('');
+      }
+    } catch (err) {
+      setStatus('error');
+      setError(err.message || 'Upload failed.');
+    }
+  };
+
+  const onRemove = () => {
+    onChange('');
+    setFile(null);
+    setStatus('idle');
+    setError('');
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+      setPreviewUrl('');
+    }
+  };
+
+  // The preview to render — prefer the freshly-chosen local file, fall back
+  // to the saved URL. Video files get a <video> element instead of <img>.
+  const currentPreview = previewUrl || value || '';
+  const isVideo = file?.type?.startsWith('video/') || /\.(mp4|webm|mov)$/i.test(value || '');
+
+  return (
+    <div className="sm:col-span-2 space-y-2">
+      <label className="block text-xs text-gray-400 mb-1">{label}</label>
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="w-32 h-32 rounded-xl overflow-hidden bg-dark-900 border border-dark-700 flex items-center justify-center flex-shrink-0">
+          {currentPreview ? (
+            isVideo ? (
+              <video src={currentPreview} className="w-full h-full object-cover" muted playsInline />
+            ) : (
+              <img src={currentPreview} alt={label} className="w-full h-full object-cover" />
+            )
+          ) : (
+            <div className="text-gray-600 text-xs flex flex-col items-center gap-1">
+              <HiPhotograph className="text-2xl" />
+              <span>No media</span>
+            </div>
+          )}
+        </div>
+
+        <div className="flex-1 space-y-2 min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <label className="px-3 py-2 rounded-lg border border-dark-700 text-gray-300 hover:bg-dark-800 hover:text-white cursor-pointer text-sm inline-flex items-center gap-2 transition-colors">
+              <HiUpload />
+              {file ? 'Change file' : 'Choose file'}
+              <input
+                type="file"
+                accept={accept}
+                onChange={onPick}
+                className="hidden"
+                disabled={status === 'uploading'}
+              />
+            </label>
+            <button
+              type="button"
+              onClick={onUpload}
+              disabled={!file || status === 'uploading'}
+              className="px-3 py-2 rounded-lg border border-accent-cyan/40 text-accent-cyan hover:bg-accent-cyan/10 disabled:opacity-50 disabled:cursor-not-allowed text-sm inline-flex items-center gap-2 transition-colors"
+            >
+              <HiUpload />
+              {status === 'uploading' ? 'Uploading...' : 'Upload'}
+            </button>
+            {(value || previewUrl) && (
+              <button
+                type="button"
+                onClick={onRemove}
+                disabled={status === 'uploading'}
+                className="px-3 py-2 rounded-lg border border-red-400/40 text-red-300 hover:bg-red-500/10 disabled:opacity-50 text-sm inline-flex items-center gap-2 transition-colors"
+              >
+                <HiTrash />
+                Remove
+              </button>
+            )}
+          </div>
+          {file && (
+            <p className="text-xs text-gray-400 truncate">
+              {file.name} ({(file.size / 1024).toFixed(1)} KB)
+              {file.type?.startsWith('video/') && (
+                <span className="ml-2 inline-flex items-center gap-1 text-accent-cyan">
+                  <HiVideoCamera /> video
+                </span>
+              )}
+            </p>
+          )}
+          {value && !file && (
+            <p className="text-xs text-gray-500 truncate font-mono">{value}</p>
+          )}
+          {status === 'done' && !error && (
+            <p className="text-xs text-green-400">Uploaded.</p>
+          )}
+          {error && <p className="text-xs text-red-400">{error}</p>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Live-preview modal: renders the public page that corresponds to the
+// currently active dashboard tab inside an iframe. The iframe is keyed by
+// `previewKey` so we can force a remount (and thus a fresh data fetch) when
+// the user clicks Refresh after saving changes.
+function PreviewModal({ url, previewKey, onRefresh, onClose }) {
+  // Close on Escape — small UX nicety, mirrors the existing lightbox modals
+  // in CertificatesPage.jsx and GalleryPage.jsx.
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
+  return (
+    <motion.div
+      key="preview-backdrop"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
+      onClick={onClose}
+      className="fixed inset-0 z-50 bg-dark-950/95 backdrop-blur-sm flex items-center justify-center p-4"
+    >
+      <motion.div
+        key="preview-panel"
+        initial={{ opacity: 0, scale: 0.96, y: 8 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.96, y: 8 }}
+        transition={{ duration: 0.2 }}
+        // Stop propagation so clicks inside the panel don't bubble up to the
+        // backdrop's onClick={onClose}.
+        onClick={(e) => e.stopPropagation()}
+        className="relative w-full max-w-6xl h-[90vh] rounded-2xl glass border border-dark-700 overflow-hidden flex flex-col"
+      >
+        {/* Header bar */}
+        <div className="flex items-center justify-between gap-2 px-4 py-3 border-b border-dark-700 bg-dark-900/60">
+          <div className="flex items-center gap-2 min-w-0">
+            <HiEye className="text-accent-cyan shrink-0" />
+            <span className="text-sm text-gray-300 shrink-0">Preview</span>
+            <span className="text-xs font-mono text-gray-500 truncate">· {url}</span>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={onRefresh}
+              className="px-3 py-1.5 rounded-lg border border-dark-700 text-gray-300 hover:bg-dark-800 hover:text-white transition-colors inline-flex items-center gap-1.5 text-sm"
+              title="Reload the preview to pick up saved changes"
+            >
+              <HiRefresh />
+              Refresh
+            </button>
+            <a
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-3 py-1.5 rounded-lg border border-dark-700 text-gray-300 hover:bg-dark-800 hover:text-white transition-colors inline-flex items-center gap-1.5 text-sm"
+              title="Open in a new browser tab"
+            >
+              <HiExternalLink />
+              Open
+            </a>
+            <button
+              onClick={onClose}
+              className="w-9 h-9 rounded-lg border border-dark-700 text-gray-300 hover:bg-dark-800 hover:text-white transition-colors inline-flex items-center justify-center"
+              aria-label="Close preview"
+            >
+              <HiX />
+            </button>
+          </div>
+        </div>
+
+        {/* Iframe — white bg matches the public site's light theme. */}
+        <iframe
+          key={previewKey}
+          src={url}
+          title={`Preview of ${url}`}
+          className="w-full flex-1 bg-white"
+        />
+      </motion.div>
+    </motion.div>
   );
 }
