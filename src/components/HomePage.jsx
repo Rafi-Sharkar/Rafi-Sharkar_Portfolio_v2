@@ -16,7 +16,7 @@ import {
 import ProjectCard from '@/components/ProjectCard';
 import ContactForm from '@/components/ContactForm';
 import Footer from '@/components/Footer';
-import { Self } from '@/assets/data/data';
+import { Self, WorkExperiences } from '@/assets/data/data';
 import { usePortfolioData } from '@/context/PortfolioDataProvider';
 
 const fadeInUp = {
@@ -58,7 +58,7 @@ const getExperience = (startDate) => {
   return { years, months };
 };
 
-const FALLBACK_EXPERIENCE = '2025-07-01';
+const FALLBACK_EXPERIENCE = '2022-09-01';
 
 function SkillCard({ title, items, icon: Icon, delay }) {
   return (
@@ -99,7 +99,7 @@ function SkillCard({ title, items, icon: Icon, delay }) {
 }
 
 export default function HomePage() {
-  const { projects, skills, profile } = usePortfolioData();
+  const { projects, skills, profile, experiences } = usePortfolioData();
 
   const name = profile?.name || Self.name;
   const firstName = name.split(' ')[0];
@@ -108,7 +108,7 @@ export default function HomePage() {
   const heroSubtitle = profile?.heroSubtitle || 'Hello, I am';
   const heroTagline =
     profile?.heroTagline ||
-    'Building scalable and high-performance backend systems with NestJS, designing efficient and reliable databases using PostgreSQL and exploring AI integration into systems to create smarter digital solutions.';
+    'Leading system design and microservices architecture for live production platforms. Specialized in Node.js, NestJS, PostgreSQL, Redis, Docker, and AWS cloud infrastructure.';
   const profilePic = profile?.profilePic || Self.profile_pic;
   const coverPic = profile?.coverPic || Self.cover_pic;
   const cvUrl = profile?.cvUrl || Self.CV_down;
@@ -116,17 +116,19 @@ export default function HomePage() {
   const linkedinUrl = profile?.linkedinUrl || Self.LI_link;
   const aboutP1 =
     profile?.aboutP1 ||
-    'I am Mustakim Billah Rafi, a full-stack developer with expertise in backend development, database management, and system design. I work with NestJS to build scalable microservices, manage PostgreSQL for efficient data handling, and design reliable software architectures.';
+    'I am Mustakim Billah Rafi, a System Design and Backend Engineer with expertise in building scalable microservices, database schema design, and high-performance backend systems. I work with Node.js, NestJS, PostgreSQL, Redis, and AWS to architect multi-tenant production platforms with 99.9% uptime.';
   const aboutP2 =
     profile?.aboutP2 ||
-    'I have a strong interest in AI and Machine Learning, particularly in exploring how AI agents can effectively integrate with software systems using MCP servers. Currently pursuing a BSc in Computer Science and Engineering, I am expanding my skills in DevOps.';
-  const quote = profile?.quote || 'Code with scalability, design with purpose, and learn without limits.';
+    'Experienced in leading end-to-end architecture decisions, designing REST API endpoints secured with JWT/OAuth2 and RBAC, driving CI/CD containerization strategies, and building real-time event systems with WebSockets and BullMQ.';
+  const quote = profile?.quote || 'Code with scalability, design with purpose, and build systems for peak resilience.';
   const experienceStart = profile?.experienceStartDate || FALLBACK_EXPERIENCE;
 
   const expFormatted = useMemo(() => {
     const { years, months } = getExperience(experienceStart);
     return `${years}Y ${months}M`;
   }, [experienceStart]);
+
+  const expList = experiences || WorkExperiences;
 
   return (
     <div className="min-h-screen bg-dark-950 overflow-x-hidden">
@@ -180,14 +182,14 @@ export default function HomePage() {
                   transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
                   className="absolute -right-4 top-8 px-4 py-2 glass rounded-full text-sm font-medium text-accent-cyan"
                 >
-                  Backend Dev
+                  System Design
                 </motion.div>
                 <motion.div
                   animate={{ y: [0, 10, 0] }}
                   transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
                   className="absolute -left-4 bottom-16 px-4 py-2 glass rounded-full text-sm font-medium text-accent-purple"
                 >
-                  Full Stack
+                  Microservices & Backend
                 </motion.div>
               </div>
             </motion.div>
@@ -343,10 +345,10 @@ export default function HomePage() {
                   whileInView={{ scale: 1 }}
                   viewport={{ once: true }}
                   transition={{ delay: 0.5, type: 'spring' }}
-                  className="absolute -bottom-6 -right-6 w-28 h-28 rounded-2xl glass flex flex-col items-center justify-center"
+                  className="absolute -bottom-6 -right-6 w-28 h-28 rounded-2xl glass flex flex-col items-center justify-center text-center p-2"
                 >
                   <span className="text-3xl font-bold gradient-text">{expFormatted}</span>
-                  <span className="text-xs text-gray-400">Experience</span>
+                  <span className="text-xs text-gray-400">Total Exp</span>
                 </motion.div>
               </div>
             </motion.div>
@@ -359,8 +361,8 @@ export default function HomePage() {
             >
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-8">
                 {[
-                  { icon: HiBriefcase, label: 'Experience', value: expFormatted, sub: 'Backend & System Design' },
-                  { icon: HiCode, label: 'Frontend', value: expFormatted, sub: 'React & Next.js' },
+                  { icon: HiBriefcase, label: 'Experience', value: expFormatted, sub: 'System Design & Backend' },
+                  { icon: HiCode, label: 'Engineering', value: '4 Roles', sub: 'Microservices & Fullstack' },
                   { icon: HiAcademicCap, label: 'Education', value: 'B.Sc CSE', sub: 'IUB, Bangladesh' },
                 ].map((item, i) => (
                   <motion.div
@@ -387,6 +389,87 @@ export default function HomePage() {
                 <footer className="mt-2 text-sm text-accent-cyan">- {name}</footer>
               </blockquote>
             </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Work Experience Section */}
+      <section className="relative py-20 lg:py-32 overflow-hidden">
+        <div className="absolute inset-0 bg-dark-900/40" />
+
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-16"
+          >
+            <p className="section-subtitle">Career Path</p>
+            <h2 className="section-title">Work Experience</h2>
+          </motion.div>
+
+          <div className="relative border-l-2 border-accent-cyan/30 ml-4 sm:ml-8 md:ml-24 pl-6 sm:pl-8 space-y-12">
+            {expList.map((item, idx) => (
+              <motion.div
+                key={item.id || idx}
+                initial={{ opacity: 0, x: -30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: idx * 0.1 }}
+                className="relative group"
+              >
+                {/* Timeline Node Dot */}
+                <div className="absolute -left-[31px] sm:-left-[39px] top-1.5 w-5 h-5 rounded-full bg-dark-950 border-2 border-accent-cyan group-hover:border-accent-purple group-hover:scale-125 transition-all duration-300 shadow-lg shadow-accent-cyan/50" />
+
+                <div className="card hover:border-accent-cyan/40 transition-all duration-300">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-4">
+                    <div>
+                      <div className="flex items-center gap-3 flex-wrap">
+                        <h3 className="text-xl sm:text-2xl font-bold text-white group-hover:text-accent-cyan transition-colors">
+                          {item.role}
+                        </h3>
+                        {item.isCurrent && (
+                          <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                            Present Role
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-accent-purple font-medium text-sm sm:text-base mt-1">
+                        {item.company} <span className="text-gray-500">• {item.location}</span>
+                      </p>
+                    </div>
+                    <span className="self-start md:self-center px-4 py-1.5 rounded-full text-xs font-semibold bg-accent-cyan/10 text-accent-cyan border border-accent-cyan/30 shrink-0">
+                      {item.period}
+                    </span>
+                  </div>
+
+                  {/* Key Skills */}
+                  {item.keySkills && item.keySkills.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mb-5">
+                      {item.keySkills.map((skill, sIdx) => (
+                        <span
+                          key={sIdx}
+                          className="px-2.5 py-1 rounded-md text-xs font-medium bg-dark-800 text-gray-300 border border-white/5"
+                        >
+                          {skill}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Bullet points */}
+                  <ul className="space-y-2.5 text-gray-300 text-sm sm:text-base">
+                    {item.bullets.map((bullet, bIdx) => (
+                      <li key={bIdx} className="flex items-start gap-2.5">
+                        <span className="inline-block w-1.5 h-1.5 rounded-full bg-accent-cyan mt-2 shrink-0" />
+                        <span className="leading-relaxed">{bullet}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>

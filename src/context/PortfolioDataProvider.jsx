@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import { Gallery_01, Cert, Projects1, Self } from '@/assets/data/data';
+import { Gallery_01, Cert, Projects1, Self, WorkExperiences } from '@/assets/data/data';
 
 const PortfolioDataContext = createContext(null);
 
@@ -23,27 +23,32 @@ const certificateImage = Cert[0]?.img || '';
 const defaultSkills = {
   languages: [
     { name: 'TypeScript', level: 'Experienced' },
-    { name: 'Java', level: 'Experienced' },
-    { name: 'Python', level: 'Experienced' },
+    { name: 'JavaScript (ES6+)', level: 'Experienced' },
+    { name: 'Python', level: 'Intermediate' },
     { name: 'SQL', level: 'Experienced' },
-    { name: 'HTML/CSS', level: 'Experienced' },
+    { name: 'HTML5/CSS3', level: 'Experienced' },
   ],
   frameworks: [
-    { name: 'React', level: 'Intermediate' },
-    { name: 'Next.js', level: 'Basic' },
-    { name: 'Nest.js', level: 'Intermediate' },
-    { name: 'Java Spring', level: 'Basic' },
+    { name: 'Node.js', level: 'Experienced' },
+    { name: 'NestJS', level: 'Experienced' },
+    { name: 'Express.js', level: 'Experienced' },
+    { name: 'React.js', level: 'Experienced' },
+    { name: 'Next.js', level: 'Intermediate' },
+    { name: 'WebSocket (Socket.io)', level: 'Experienced' },
   ],
   databases: [
-    { name: 'PostgreSQL', level: 'Intermediate' },
-    { name: 'MySQL', level: 'Intermediate' },
+    { name: 'PostgreSQL', level: 'Experienced' },
+    { name: 'Redis (Caching)', level: 'Experienced' },
     { name: 'MongoDB', level: 'Intermediate' },
   ],
   tools: [
-    { name: 'Git', level: 'Intermediate' },
-    { name: 'System Design', level: 'Intermediate' },
-    { name: 'DSA', level: 'Intermediate' },
-    { name: 'MS Office', level: 'Intermediate' },
+    { name: 'System Design & Microservices', level: 'Experienced' },
+    { name: 'AWS & API Gateway', level: 'Experienced' },
+    { name: 'Docker & Containerization', level: 'Experienced' },
+    { name: 'GitHub Actions (CI/CD)', level: 'Experienced' },
+    { name: 'BullMQ & Stripe API', level: 'Experienced' },
+    { name: 'JWT, OAuth2 & RBAC', level: 'Experienced' },
+    { name: 'Jest Testing', level: 'Experienced' },
   ],
 };
 
@@ -59,18 +64,18 @@ const defaultProfile = {
   facebookUrl: '',
   instagramUrl: '',
   aboutP1:
-    'I am Mustakim Billah Rafi, a full-stack developer with expertise in backend development, database management, and system design. I work with NestJS to build scalable microservices, manage PostgreSQL for efficient data handling, and design reliable software architectures.',
+    'I am Mustakim Billah Rafi, a System Design and Backend Engineer with expertise in building scalable microservices, database schema design, and high-performance backend systems. I work with Node.js, NestJS, PostgreSQL, Redis, and AWS to architect multi-tenant production platforms with 99.9% uptime.',
   aboutP2:
-    'I have a strong interest in AI and Machine Learning, particularly in exploring how AI agents can effectively integrate with software systems using MCP servers. Currently pursuing a BSc in Computer Science and Engineering, I am expanding my skills in DevOps.',
-  quote: 'Code with scalability, design with purpose, and learn without limits.',
+    'Experienced in leading end-to-end architecture decisions, designing REST API endpoints secured with JWT/OAuth2 and RBAC, driving CI/CD containerization strategies, and building real-time event systems with WebSockets and BullMQ.',
+  quote: 'Code with scalability, design with purpose, and build systems for peak resilience.',
   heroSubtitle: 'Hello, I am',
   heroHeading: '',
   heroTagline:
-    'Building scalable and high-performance backend systems with NestJS, designing efficient and reliable databases using PostgreSQL and exploring AI integration into systems to create smarter digital solutions.',
+    'Leading system design and microservices architecture for live production platforms. Specialized in Node.js, NestJS, PostgreSQL, Redis, Docker, and AWS cloud infrastructure.',
   contactTitle: "Let's work together",
   contactSubtitle: '',
   mapLabel: 'Dhaka, Bangladesh',
-  experienceStartDate: '2025-07-01',
+  experienceStartDate: '2022-09-01',
 };
 
 const defaultContactCards = [
@@ -113,6 +118,7 @@ const defaultData = {
   certificates: withIds(Cert, 'certificate'),
   projects: withIds(Projects1, 'project'),
   skills: defaultSkills,
+  experiences: WorkExperiences,
   profile: defaultProfile,
   contact: {
     title: defaultContactCards.find((c) => c.type === 'email')?.value || 'Get in touch',
@@ -257,6 +263,7 @@ export function PortfolioDataProvider({ children }) {
         certificates: normalizeCertificates(certificates),
         projects: normalizeProjects(projects),
         skills: normalizeSkills(skillsRows),
+        experiences: defaultData.experiences,
         profile,
         contact: {
           title: profile.contactTitle || defaultData.contact.title,
@@ -278,6 +285,7 @@ export function PortfolioDataProvider({ children }) {
       certificates: sortLatestFirst(content.certificates),
       projects: sortLatestFirst(content.projects),
       skills: content.skills,
+      experiences: content.experiences || defaultData.experiences,
       profile: content.profile,
       contact: content.contact,
     }),
