@@ -17,14 +17,14 @@ This portfolio now uses **Firebase Authentication** instead of hardcoded credent
 - Click **Create user**
 
 ### 3. Environment Variables
-Your `.env` file already has Firebase configuration. Make sure these are set:
+Set these variables in your environment or `.env` file:
 ```
-VITE_FIREBASE_API_KEY=AIzaSyDM8YF5v52fdRc6fEZe-e528eSjhkiNOU4
-VITE_FIREBASE_AUTH_DOMAIN=rafi-sharkar.firebaseapp.com
-VITE_FIREBASE_PROJECT_ID=rafi-sharkar
-VITE_FIREBASE_STORAGE_BUCKET=rafi-sharkar.firebasestorage.app
-VITE_FIREBASE_MESSAGING_SENDER_ID=190905282016
-VITE_FIREBASE_APP_ID=1:190905282016:web:8dc07f036d2ca99b090f85
+VITE_FIREBASE_API_KEY=<YOUR_FIREBASE_API_KEY>
+VITE_FIREBASE_AUTH_DOMAIN=<YOUR_FIREBASE_AUTH_DOMAIN>
+VITE_FIREBASE_PROJECT_ID=<YOUR_FIREBASE_PROJECT_ID>
+VITE_FIREBASE_STORAGE_BUCKET=<YOUR_FIREBASE_STORAGE_BUCKET>
+VITE_FIREBASE_MESSAGING_SENDER_ID=<YOUR_FIREBASE_MESSAGING_SENDER_ID>
+VITE_FIREBASE_APP_ID=<YOUR_FIREBASE_APP_ID>
 ```
 
 ### 4. Admin Login Flow

@@ -17,8 +17,8 @@ const prisma = new PrismaClient();
 // The fallback values below are intentionally weak so they are obvious to
 // spot in logs if someone forgets to set the env vars in production.
 const DEFAULT_ADMIN = {
-  username: process.env.ADMIN_USERNAME || 'admin',
-  password: process.env.ADMIN_PASSWORD || 'change-me-set-ADMIN_PASSWORD',
+  username: process.env.ADMIN_USERNAME || process.env.VITE_ADMIN_USERNAME || 'admin',
+  password: process.env.ADMIN_PASSWORD || process.env.VITE_ADMIN_PASSWORD || 'change-me-set-ADMIN_PASSWORD',
 };
 
 if (DEFAULT_ADMIN.password === 'change-me-set-ADMIN_PASSWORD') {

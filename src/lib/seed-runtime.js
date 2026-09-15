@@ -8,10 +8,10 @@ import { hashPassword } from './auth.js';
 const prisma = globalThis.__prisma ?? new PrismaClient();
 if (process.env.NODE_ENV !== 'production') globalThis.__prisma = prisma;
 
-// Default credentials requested by the project owner.
+// Default admin credentials are read from environment variables.
 export const DEFAULT_ADMIN = {
-  username: 'rafi_sharkar',
-  password: 'Rafi#144',
+  username: process.env.ADMIN_USERNAME || process.env.VITE_ADMIN_USERNAME || 'admin',
+  password: process.env.ADMIN_PASSWORD || process.env.VITE_ADMIN_PASSWORD || 'change-me-set-ADMIN_PASSWORD',
 };
 
 // Default profile content — used when /api/profile is called before the admin

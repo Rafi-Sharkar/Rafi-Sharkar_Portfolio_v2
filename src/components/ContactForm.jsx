@@ -136,12 +136,12 @@ export default function ContactForm({ showFooter = true }) {
 
     try {
       await emailjs.send(
-        'rafisharkar_portfolio',
-        'template_x0dfxw8',
+        process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID || 'rafisharkar_portfolio',
+        process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID || 'template_x0dfxw8',
         {
           message: `Name: ${formData.name}\nEmail: ${formData.email}\nSubject: ${formData.subject}\nMessage: ${formData.message}`,
         },
-        '7i3uMS-5GJiWocOG9'
+        process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY || '7i3uMS-5GJiWocOG9'
       );
 
       setSubmitStatus('success');
